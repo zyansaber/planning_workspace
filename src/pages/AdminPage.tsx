@@ -352,6 +352,106 @@ export default function AdminPage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {/* Card Configuration Section */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Settings className="w-5 h-5" />
+              Card Configuration
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {items.map((item) => (
+                <div key={item.id} className="border rounded-lg p-4 space-y-4 bg-gray-50">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-medium flex items-center gap-2">
+                      <div className={`w-6 h-6 rounded ${item.color || 'bg-gray-500'} flex items-center justify-center text-white text-sm`}>
+                        {modernIconOptions.find(opt => opt.id === item.icon)?.icon || '🔗'}
+                      </div>
+                      {item.title}
+                    </h3>
+                    <span className="text-sm text-gray-500 bg-white px-2 py-1 rounded border">
+                      {item.type}
+                    </span>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor={`config-url-${item.id}`}>URL</Label>
+                      <Input
+                        id={`config-url-${item.id}`}
+                        value={item.url || ''}
+                        onChange={(e) => updateItem(item.id, { url: e.target.value })}
+                        placeholder="Enter URL"
+                        className="text-sm"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor={`config-parent-${item.id}`}>Parent Card</Label>
+                      <Select
+                        value={item.parentId || 'none'}
+                        onValueChange={(value) => 
+                          updateItem(item.id, { parentId: value === 'none' ? undefined : value })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select parent" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">No Parent</SelectItem>
+                          {items
+                            .filter(parentItem => parentItem.id !== item.id)
+                            .map((parentItem) => (
+                              <SelectItem key={parentItem.id} value={parentItem.id}>
+                                {parentItem.title}
+                              </SelectItem>
+                            ))
+                          }
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor={`config-display-${item.id}`}>Display Mode</Label>
+                      <Select
+                        value={item.displayMode || 'external'}
+                        onValueChange={(value: 'external' | 'embedded') => 
+                          updateItem(item.id, { displayMode: value })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="external">External</SelectItem>
+                          <SelectItem value="embedded">Embedded</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {item.parentId && (
+                    <div className="text-sm text-blue-600 bg-blue-50 p-2 rounded border">
+                      <span className="font-medium">Parent:</span> {
+                        items.find(p => p.id === item.parentId)?.title || 'Unknown'
+                      }
+                    </div>
+                  )}
+                </div>
+              ))}
+              
+              {items.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  No cards available to configure. Add some work areas first.
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle>Work Areas</CardTitle>
