@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 export default function Index() {
   const { items, loading } = useWorkspaceStore();
   const navigate = useNavigate();
-  const [taskSidebarOpen, setTaskSidebarOpen] = useState(true); // Default open
+  const [taskSidebarOpen, setTaskSidebarOpen] = useState(false); // Default open
   
   // Filter to show only top-level items (not nested children)
   const topLevelItems = items.filter(item => !item.parentId || item.parentId === '' || item.parentId === 'none');
