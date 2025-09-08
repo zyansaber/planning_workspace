@@ -24,7 +24,7 @@ export default function EmbedPage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Workspace Not Found</h1>
           <p className="text-gray-600 mb-6">The workspace you're looking for doesn't exist.</p>
-          <Button onClick={() => navigate('/')}>
+          <Button onClick={() => navigate(-1)}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Home
           </Button>
