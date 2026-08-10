@@ -1,7 +1,12 @@
 import { useState, useEffect } from 'react';
 import { WorkspaceItem } from '@/types/workspace';
 import { database } from '@/lib/firebase';
-import { ref, push, set, remove, onValue, off } from 'firebase/database';
+import { ref, push, set, remove, onValue, off, update } from 'firebase/database';
+
+const sortWorkspaces = (a: WorkspaceItem, b: WorkspaceItem) => {
+  const orderDifference = (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER);
+  return orderDifference || a.createdAt.getTime() - b.createdAt.getTime();
+};
 
 export const useWorkspaceStore = () => {
   const [items, setItems] = useState<WorkspaceItem[]>([]);
@@ -19,7 +24,7 @@ export const useWorkspaceStore = () => {
           ...(value as Omit<WorkspaceItem, 'id'>),
           createdAt: new Date((value as { createdAt: string }).createdAt)
         }));
-        setItems(workspaceItems.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime()));
+        setItems(workspaceItems.sort(sortWorkspaces));
       } else {
         setItems([]);
       }
@@ -45,8 +50,10 @@ export const useWorkspaceStore = () => {
   };
 
   const addItem = async (item: Omit<WorkspaceItem, 'id' | 'createdAt'>) => {
+    const siblingItems = items.filter(existingItem => (existingItem.parentId || 'none') === (item.parentId || 'none'));
     const newItem = {
       ...item,
+      order: siblingItems.length,
       createdAt: new Date().toISOString()
     };
     await saveToFirebase(newItem);
@@ -73,12 +80,33 @@ export const useWorkspaceStore = () => {
     return items.find(item => item.id === id);
   };
 
+  const moveItem = async (id: string, direction: 'forward' | 'backward') => {
+    const item = items.find(workspaceItem => workspaceItem.id === id);
+    if (!item) return;
+
+    const siblings = items
+      .filter(workspaceItem => (workspaceItem.parentId || 'none') === (item.parentId || 'none'))
+      .sort(sortWorkspaces);
+    const currentIndex = siblings.findIndex(workspaceItem => workspaceItem.id === id);
+    const targetIndex = direction === 'forward' ? currentIndex - 1 : currentIndex + 1;
+
+    if (currentIndex < 0 || targetIndex < 0 || targetIndex >= siblings.length) return;
+
+    const reordered = [...siblings];
+    [reordered[currentIndex], reordered[targetIndex]] = [reordered[targetIndex], reordered[currentIndex]];
+    const orderUpdates = Object.fromEntries(
+      reordered.map((workspaceItem, index) => [`workspaces/${workspaceItem.id}/order`, index])
+    );
+    await update(ref(database), orderUpdates);
+  };
+
   return {
     items,
     loading,
     addItem,
     updateItem,
     deleteItem,
-    getItem
+    getItem,
+    moveItem
   };
 };
