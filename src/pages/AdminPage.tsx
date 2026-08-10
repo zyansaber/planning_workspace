@@ -15,7 +15,7 @@ import {
   Settings, Zap, Globe, ChartPieIcon, Briefcase, Smartphone, Laptop,
   BarChart3, Wrench, Target, Rocket, Lock, Lightbulb, Package, 
   FolderKanban, Users, LayoutGrid, Clock, Mail, Inbox, Search, MessageSquare,
-  FileJson, PanelRight, LineChart
+  FileJson, PanelRight, LineChart, ArrowUp, ArrowDown
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -61,7 +61,7 @@ const colorOptions = [
 ];
 
 export default function AdminPage() {
-  const { items, loading, addItem, updateItem, deleteItem } = useWorkspaceStore();
+  const { items, loading, addItem, updateItem, deleteItem, moveItem } = useWorkspaceStore();
   const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<WorkspaceItem | null>(null);
@@ -131,6 +131,7 @@ export default function AdminPage() {
       url: item.url,
       type: item.type,
       icon: item.icon || 'globe',
+      parentId: item.parentId || 'none',
       color: item.color || 'bg-gradient-to-br from-blue-500 to-indigo-600'
     });
     setDialogOpen(true);
@@ -474,7 +475,10 @@ export default function AdminPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {items.map((item) => (
+                  {items.map((item) => {
+                    const siblings = items.filter(candidate => (candidate.parentId || 'none') === (item.parentId || 'none'));
+                    const siblingIndex = siblings.findIndex(candidate => candidate.id === item.id);
+                    return (
                     <TableRow key={item.id}>
                       <TableCell>
                         <div className={`w-8 h-8 rounded ${item.color || 'bg-gray-500'} flex items-center justify-center text-white`}>
@@ -513,6 +517,26 @@ export default function AdminPage() {
                           <Button
                             variant="ghost"
                             size="sm"
+                            disabled={siblingIndex === 0}
+                            onClick={() => moveItem(item.id, 'forward')}
+                            aria-label={`Move ${item.title} forward`}
+                            title="Move forward"
+                          >
+                            <ArrowUp className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled={siblingIndex === siblings.length - 1}
+                            onClick={() => moveItem(item.id, 'backward')}
+                            aria-label={`Move ${item.title} backward`}
+                            title="Move backward"
+                          >
+                            <ArrowDown className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => handleEdit(item)}
                           >
                             <Pencil className="w-4 h-4" />
@@ -528,7 +552,8 @@ export default function AdminPage() {
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))}
+                    );
+                  })}
                 </TableBody>
               </Table>
             )}

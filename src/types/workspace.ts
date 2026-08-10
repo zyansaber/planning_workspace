@@ -8,6 +8,7 @@ export interface WorkspaceItem {
   color?: string;
   parentId?: string;
   childrenIds?: string[];
+  order?: number;
   createdAt: Date;
 }
 
@@ -29,4 +30,5 @@ export interface WorkspaceStore {
   updateItem: (id: string, item: Partial<WorkspaceItem>) => void;
   deleteItem: (id: string) => void;
   getItem: (id: string) => WorkspaceItem | undefined;
+  moveItem: (id: string, direction: 'forward' | 'backward') => Promise<void>;
 }
