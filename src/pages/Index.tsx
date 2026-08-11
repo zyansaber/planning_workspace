@@ -1,15 +1,12 @@
-import { useState } from 'react';
 import { useWorkspaceStore } from '@/hooks/useWorkspaceStore';
 import { WorkspaceCard } from '@/components/WorkspaceCard';
-import { TaskSidebar } from '@/components/TaskSidebar';
 import { Button } from '@/components/ui/button';
-import { Settings, Plus, Loader2, ListTodo } from 'lucide-react';
+import { Settings, Plus, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function Index() {
   const { items, loading } = useWorkspaceStore();
   const navigate = useNavigate();
-  const [taskSidebarOpen, setTaskSidebarOpen] = useState(false); // Default open
   
   // Filter to show only top-level items (not nested children)
   const topLevelItems = items.filter(item => !item.parentId || item.parentId === '' || item.parentId === 'none');
@@ -28,26 +25,13 @@ export default function Index() {
   return (
     <div className="min-h-screen bg-gray-50 transition-all duration-300">
       {/* Header */}
-      <header className={`bg-white shadow-sm border-b transition-all duration-300 ${
-        taskSidebarOpen ? 'mr-[30%]' : 'mr-0'
-      }`}>
-        <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 transition-all duration-300 ${
-          taskSidebarOpen ? 'max-w-5xl' : 'max-w-7xl'
-        }`}>
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <h1 className="text-2xl font-bold text-gray-900">Workspace</h1>
             </div>
             <div className="flex items-center gap-2">
-              <Button
-                onClick={() => setTaskSidebarOpen(!taskSidebarOpen)}
-                variant={taskSidebarOpen ? "default" : "outline"}
-                size="sm"
-                className="flex items-center gap-2"
-              >
-                <ListTodo className="w-4 h-4" />
-                {taskSidebarOpen ? 'Hide Tasks' : 'Show Tasks'}
-              </Button>
               <Button
                 onClick={() => navigate('/admin')}
                 variant="outline"
@@ -63,12 +47,8 @@ export default function Index() {
       </header>
 
       {/* Main Content */}
-      <main className={`transition-all duration-300 ${
-        taskSidebarOpen ? 'mr-[30%]' : 'mr-0'
-      } px-4 sm:px-6 lg:px-8 py-8`}>
-        <div className={`max-w-7xl mx-auto transition-all duration-300 ${
-          taskSidebarOpen ? 'max-w-5xl' : 'max-w-7xl'
-        }`}>
+      <main className="px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto">
           <div className="mb-8">
             <h2 className="text-xl font-semibold text-gray-900 mb-2">Work Areas</h2>
             <p className="text-gray-600">Select your work area to start productive work</p>
@@ -94,11 +74,7 @@ export default function Index() {
             </Button>
           </div>
         ) : (
-            <div className={`grid gap-6 transition-all duration-300 ${
-              taskSidebarOpen 
-                ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5' 
-                : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5'
-            }`}>
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
               {topLevelItems.map((item) => (
                 <WorkspaceCard key={item.id} item={item} />
               ))}
@@ -106,12 +82,6 @@ export default function Index() {
           )}
         </div>
       </main>
-
-      {/* Task Management Sidebar */}
-      <TaskSidebar 
-        isOpen={taskSidebarOpen} 
-        onToggle={() => setTaskSidebarOpen(!taskSidebarOpen)} 
-      />
     </div>
   );
 }

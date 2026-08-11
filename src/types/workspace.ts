@@ -12,18 +12,6 @@ export interface WorkspaceItem {
   createdAt: Date;
 }
 
-export interface Task {
-  id: string;
-  title: string;
-  description: string;
-  createdAt: string;
-  estimatedCompletionTime: string;
-  progress: number; // 0-100
-  timeSpent: number; // in minutes
-  status: 'todo' | 'in-progress' | 'completed';
-  priority: 'low' | 'medium' | 'high';
-}
-
 export interface WorkspaceStore {
   items: WorkspaceItem[];
   addItem: (item: Omit<WorkspaceItem, 'id' | 'createdAt'>) => void;
