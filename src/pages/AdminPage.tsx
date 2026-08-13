@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { WorkspaceIcon } from '@/components/WorkspaceIcon';
 
 const modernIconOptions = [
   { id: 'globe', icon: <Globe className="w-5 h-5" />, name: 'Globe' },
@@ -482,7 +483,7 @@ export default function AdminPage() {
                     <TableRow key={item.id}>
                       <TableCell>
                         <div className={`w-8 h-8 rounded ${item.color || 'bg-gray-500'} flex items-center justify-center text-white`}>
-                          {item.icon || '🔗'}
+                          <WorkspaceIcon name={item.icon} className="w-5 h-5" />
                         </div>
                       </TableCell>
                       <TableCell className="font-medium">{item.title}</TableCell>

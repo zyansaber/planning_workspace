@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, ExternalLink } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { WorkspaceItem } from '@/types/workspace';
+import { WorkspaceIcon } from '@/components/WorkspaceIcon';
 
 export default function EmbedPage() {
   const { id } = useParams<{ id: string }>();
@@ -49,7 +50,7 @@ export default function EmbedPage() {
           </Button>
           <div className="flex items-center gap-3">
             <div className={`w-8 h-8 rounded-xl ${workspace.color || 'bg-gradient-to-br from-blue-500 to-indigo-600'} flex items-center justify-center text-white text-sm shadow-lg`}>
-              {workspace.icon || '🔗'}
+              <WorkspaceIcon name={workspace.icon} className="w-4 h-4" />
             </div>
             <h1 className="font-semibold text-slate-800">{workspace.title}</h1>
           </div>
