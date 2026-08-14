@@ -7,7 +7,6 @@ import AdminPage from './pages/AdminPage';
 import EmbedPage from './pages/EmbedPage';
 import NestedPage from './pages/NestedPage';
 import NotFound from './pages/NotFound';
-import LongtreeProductionDashboard from './pages/LongtreeProductionDashboard';
 
 const queryClient = new QueryClient();
 
@@ -21,8 +20,6 @@ const App = () => (
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/embed/:id" element={<EmbedPage />} />
           <Route path="/nested/:id" element={<NestedPage />} />
-          <Route path="/longtree-production-dashboard" element={<LongtreeProductionDashboard />} />
-          <Route path="/longtree-production-dashboard/:locale" element={<LongtreeProductionDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </HashRouter>
