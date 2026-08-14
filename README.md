@@ -59,3 +59,27 @@ pnpm run dev
 ```shell
 pnpm run build
 ```
+
+## Single-page application deployment
+
+This project is a Vite-powered single-page application. Client-side pages such
+as `/#/admin`, `/#/embed/:id`, and `/#/nested/:id` are handled by React Router
+rather than by files on the web server. The application deliberately uses hash
+routing so refreshing a section always requests the real `/index.html` file,
+even when the deployment platform ignores SPA rewrite configuration.
+
+### Deployment
+
+Run `pnpm build` to create the production bundle in `dist`.
+
+Hash routes do not require server-side rewrites. The part after `#` stays in the
+browser and is never sent to the static server. The repository also includes
+the following fallbacks for old, non-hash links and hosting compatibility:
+
+- `render.yaml` configures the rewrite for Render.
+- `public/_redirects` configures compatible static hosts such as Netlify.
+- The `postbuild` script creates `dist/404.html` as a fallback for static hosts
+  that serve a custom 404 document but do not support rewrite rules.
+
+When deploying an existing Render service that was not created from the
+blueprint, add a rewrite in the Render dashboard from `/*` to `/index.html`.
