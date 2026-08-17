@@ -5,6 +5,7 @@ import { useWorkspaceStore } from '@/hooks/useWorkspaceStore';
 import { WorkspaceCard } from '@/components/WorkspaceCard';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, FolderKanban } from 'lucide-react';
+import { WorkspaceSidebar } from '@/components/WorkspaceSidebar';
 
 export default function NestedPage() {
   const { id } = useParams();
@@ -40,9 +41,11 @@ export default function NestedPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
-      {/* Header with back button */}
-      <header className="bg-white shadow-sm border-b sticky top-0 z-10">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 lg:flex">
+      <WorkspaceSidebar items={items} currentId={id} />
+      <div className="min-w-0 flex-1">
+        {/* Header with back button */}
+        <header className="bg-white shadow-sm border-b sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-16">
             <Button
@@ -67,10 +70,10 @@ export default function NestedPage() {
             )}
           </div>
         </div>
-      </header>
+        </header>
 
       {/* Main content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {childItems.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             {childItems.map((item) => (
@@ -89,7 +92,8 @@ export default function NestedPage() {
             </Button>
           </div>
         )}
-      </main>
+        </main>
+      </div>
     </div>
   );
 }
