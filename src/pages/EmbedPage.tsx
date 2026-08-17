@@ -5,7 +5,6 @@ import { ArrowLeft, ExternalLink } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { WorkspaceItem } from '@/types/workspace';
 import { WorkspaceIcon } from '@/components/WorkspaceIcon';
-import { WorkspaceSidebar } from '@/components/WorkspaceSidebar';
 
 export default function EmbedPage() {
   const { id } = useParams<{ id: string }>();
@@ -36,11 +35,9 @@ export default function EmbedPage() {
   }
 
   return (
-    <div className="fixed inset-0 flex bg-gradient-to-br from-slate-100 via-blue-50 to-indigo-100">
-      <WorkspaceSidebar items={items} currentId={workspace.id} />
-      <div className="flex min-w-0 flex-1 flex-col gap-3 p-3 sm:p-5">
-        {/* Soft, translucent navigation keeps the embedded content visually calm. */}
-        <header className="z-50 bg-white/75 backdrop-blur-xl rounded-2xl border border-white/80 px-4 sm:px-6 py-3 flex items-center justify-between shadow-lg shadow-slate-300/30">
+    <div className="fixed inset-0 bg-gradient-to-br from-slate-100 via-blue-50 to-indigo-100 flex flex-col p-3 sm:p-5 gap-3">
+      {/* Soft, translucent navigation keeps the embedded content visually calm. */}
+      <header className="z-50 bg-white/75 backdrop-blur-xl rounded-2xl border border-white/80 px-4 sm:px-6 py-3 flex items-center justify-between shadow-lg shadow-slate-300/30">
         <div className="flex items-center gap-4">
           <Button 
             variant="ghost" 
@@ -67,10 +64,10 @@ export default function EmbedPage() {
           <ExternalLink className="w-4 h-4" />
           Open in New Tab
         </Button>
-        </header>
+      </header>
 
       {/* Full-screen embedded content */}
-        <div className="w-full min-h-0 flex-1 rounded-3xl overflow-hidden bg-white/80 border border-white shadow-xl shadow-slate-400/20">
+      <div className="w-full min-h-0 flex-1 rounded-3xl overflow-hidden bg-white/80 border border-white shadow-xl shadow-slate-400/20">
         <iframe
           src={workspace.url}
           className="w-full h-full border-0 bg-white"
@@ -78,7 +75,6 @@ export default function EmbedPage() {
           sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation allow-pointer-lock allow-presentation"
           allow="accelerometer; autoplay; camera; clipboard-read; clipboard-write; encrypted-media; fullscreen; geolocation; gyroscope; magnetometer; microphone; midi; payment; picture-in-picture; sync-xhr; usb; web-share; xr-spatial-tracking"
         />
-        </div>
       </div>
     </div>
   );
