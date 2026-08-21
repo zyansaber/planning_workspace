@@ -3,13 +3,10 @@ import { WorkspaceCard } from '@/components/WorkspaceCard';
 import { Button } from '@/components/ui/button';
 import { Settings, Plus, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/auth/AuthProvider';
-import { LogOut } from 'lucide-react';
 
 export default function Index() {
   const { items, loading } = useWorkspaceStore();
   const navigate = useNavigate();
-  const { user, logOut } = useAuth();
   
   // Filter to show only top-level items (not nested children)
   const topLevelItems = items.filter(item => !item.parentId || item.parentId === '' || item.parentId === 'none');
@@ -35,7 +32,6 @@ export default function Index() {
               <h1 className="text-2xl font-bold text-gray-900">Workspace</h1>
             </div>
             <div className="flex items-center gap-2">
-              <span className="hidden text-sm text-gray-600 md:inline">{user?.email}</span>
               <Button
                 onClick={() => navigate('/admin')}
                 variant="outline"
@@ -44,10 +40,6 @@ export default function Index() {
               >
                 <Settings className="w-4 h-4" />
                 Settings
-              </Button>
-              <Button onClick={logOut} variant="ghost" size="sm" className="flex items-center gap-2">
-                <LogOut className="w-4 h-4" />
-                Sign out
               </Button>
             </div>
           </div>
