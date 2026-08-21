@@ -4,10 +4,6 @@ services:
     env: static
     buildCommand: pnpm install && pnpm run build
     staticPublishPath: ./dist
-    envVars:
-      # Set this to the Microsoft Entra Directory (tenant) ID in Render.
-      - key: VITE_MICROSOFT_TENANT_ID
-        sync: false
     routes:
       - type: rewrite
         source: /*
