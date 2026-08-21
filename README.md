@@ -36,24 +36,6 @@ All shadcn/ui components have been downloaded under `@/components/ui`.
 - Import components from `@/components/ui` in your React components
 - Customize the UI by modifying the Tailwind configuration
 
-## Microsoft sign-in
-
-The application uses Firebase Authentication's Microsoft provider and only
-accepts accounts whose email address ends in `@regentrv.com.au`.
-
-1. In Microsoft Entra ID, create an app registration and add the redirect URI
-   shown by Firebase Authentication for the Microsoft provider.
-2. In Firebase Console, enable **Authentication → Sign-in method → Microsoft**
-   and enter the Entra application ID and client secret.
-3. Add the deployed hostname to Firebase Authentication's authorized domains.
-4. Set `VITE_MICROSOFT_TENANT_ID` to the Regent RV Entra tenant ID in the build
-   environment. This directs the Microsoft account chooser to that tenant.
-
-The browser-side domain check controls the interface. Firebase Realtime
-Database Security Rules must also require authentication (and, if applicable,
-validate the Microsoft tenant/email claims) so data cannot be accessed by
-bypassing the interface.
-
 ## Note
 
 The `@/` path alias points to the `src/` directory
