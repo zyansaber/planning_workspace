@@ -36,6 +36,88 @@ All shadcn/ui components have been downloaded under `@/components/ui`.
 - Import components from `@/components/ui` in your React components
 - Customize the UI by modifying the Tailwind configuration
 
+## Microsoft sign-in
+
+The application uses Firebase Authentication's Microsoft provider and only
+accepts accounts whose email address ends in `@regentrv.com.au`.
+
+1. In **Microsoft Entra admin center → App registrations**, create an app for
+   the Regent RV tenant. Copy its **Application (client) ID** and **Directory
+   (tenant) ID**.
+2. Under the Entra app's **Authentication → Web → Redirect URIs**, add
+   `https://planningworkspace.firebaseapp.com/__/auth/handler`. If Firebase
+   Authentication uses a custom auth domain, add that domain's `/__/auth/handler`
+   URL instead.
+3. Under **Certificates & secrets**, create a client secret and immediately copy
+   the secret **Value** (not the Secret ID).
+4. Open the `planningworkspace` project in **Firebase Console → Build →
+   Authentication → Sign-in method → Add new provider → Microsoft**. Enter the
+   Entra application ID and client-secret value, switch the provider to
+   **Enabled**, and press **Save**.
+5. In **Firebase Authentication → Settings → Authorized domains**, add every
+   hostname that serves the app (for example the production Render hostname).
+   `localhost` must also be present when testing locally.
+6. Set `VITE_MICROSOFT_TENANT_ID` to the Directory (tenant) ID in the local
+   `.env` file and in the production build environment, then rebuild/redeploy:
+
+   ```dotenv
+   VITE_MICROSOFT_TENANT_ID=00000000-0000-0000-0000-000000000000
+   ```
+
+### `auth/configuration-not-found`
+
+This error means the Firebase project used by the web app does not currently
+have a usable Microsoft sign-in configuration. Complete step 4 above and check
+that:
+
+- the provider says **Enabled** after the page is refreshed;
+- the Entra **Application (client) ID** was used, not the tenant ID;
+- the client secret **Value** was pasted, not its Secret ID; and
+- the configuration was added to the `planningworkspace` Firebase project,
+  which is the project configured in `src/lib/firebase.ts`.
+
+Changing `VITE_MICROSOFT_TENANT_ID` alone cannot enable the provider. The
+Microsoft provider must first be configured and saved in Firebase Console.
+
+### Deploying the frontend on Render
+
+Render and Firebase have separate responsibilities in this application:
+
+- **Render** serves the compiled React application.
+- **Firebase Authentication** performs Microsoft sign-in.
+- **Firebase Realtime Database** stores the workspace data.
+
+Using Render does not cause `auth/configuration-not-found`, and keeping the data
+in Firebase is expected. That error comes from the Microsoft provider not being
+enabled or completely saved in the `planningworkspace` Firebase project.
+
+For a Render deployment:
+
+1. Copy the hostname from the Render service URL, without `https://` or a path
+   (for example `fancy-workspace.onrender.com`).
+2. Add that hostname in **Firebase Console → Authentication → Settings →
+   Authorized domains**. Do not add the complete URL.
+3. In **Render Dashboard → the static site → Environment**, create
+   `VITE_MICROSOFT_TENANT_ID` with the Entra Directory (tenant) ID as its value.
+4. Trigger **Manual Deploy → Clear build cache & deploy** because Vite embeds
+   `VITE_*` values at build time.
+
+The Entra redirect URI normally remains
+`https://planningworkspace.firebaseapp.com/__/auth/handler`; it is not the
+Render site URL. This is because the Firebase configuration uses
+`planningworkspace.firebaseapp.com` as its authentication domain. Only use a
+Render URL as an Entra redirect URI if the Firebase `authDomain` itself has
+explicitly been changed to a correctly configured custom domain.
+
+The repository's `render.yaml` declares `VITE_MICROSOFT_TENANT_ID` as a secret
+environment value for new Blueprint deployments. Existing Render services must
+still add it through the Render dashboard.
+
+The browser-side domain check controls the interface. Firebase Realtime
+Database Security Rules must also require authentication (and, if applicable,
+validate the Microsoft tenant/email claims) so data cannot be accessed by
+bypassing the interface.
+
 ## Note
 
 The `@/` path alias points to the `src/` directory
