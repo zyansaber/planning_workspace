@@ -41,12 +41,6 @@ All shadcn/ui components have been downloaded under `@/components/ui`.
 The application uses Firebase Authentication's Microsoft provider and only
 accepts accounts whose email address ends in `@regentrv.com.au`.
 
-Each Firebase session is limited to 24 hours from its signed authentication
-time. When that period expires, an open page signs the user out and the next
-visit requires a fresh Microsoft login. The Microsoft OAuth request uses
-`prompt=login` so a newly started Firebase session cannot silently reuse the
-existing Microsoft browser session.
-
 1. In **Microsoft Entra admin center → App registrations**, create an app for
    the Regent RV tenant. Copy its **Application (client) ID** and **Directory
    (tenant) ID**.

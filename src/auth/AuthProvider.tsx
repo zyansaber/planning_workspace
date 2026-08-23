@@ -2,7 +2,6 @@ import { auth } from '@/lib/firebase';
 import {
   OAuthProvider,
   User,
-  getIdTokenResult,
   onAuthStateChanged,
   signInWithPopup,
   signOut,
@@ -11,7 +10,6 @@ import { FirebaseError } from 'firebase/app';
 import { ReactNode, createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 const ALLOWED_DOMAIN = 'regentrv.com.au';
-const REAUTHENTICATION_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
 type AuthContextValue = {
   user: User | null;
@@ -50,47 +48,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    let expirationTimer: number | undefined;
-
-    const unsubscribe = onAuthStateChanged(auth, async (nextUser) => {
-      window.clearTimeout(expirationTimer);
-
-      if (!nextUser) {
-        setUser(null);
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const { authTime } = await getIdTokenResult(nextUser);
-        const authenticatedAt = Date.parse(authTime);
-        const remainingSessionTime = authenticatedAt + REAUTHENTICATION_INTERVAL_MS - Date.now();
-
-        if (!hasAllowedDomain(nextUser) || !Number.isFinite(authenticatedAt) || remainingSessionTime <= 0) {
-          await signOut(auth);
-          setUser(null);
-          return;
-        }
-
-        setUser(nextUser);
-        expirationTimer = window.setTimeout(() => {
-          void signOut(auth);
-        }, remainingSessionTime);
-      } catch {
-        // Fail closed when the signed authentication time cannot be verified.
-        await signOut(auth);
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    });
-
-    return () => {
-      window.clearTimeout(expirationTimer);
-      unsubscribe();
-    };
-  }, []);
+  useEffect(() => onAuthStateChanged(auth, async (nextUser) => {
+    if (nextUser && !hasAllowedDomain(nextUser)) {
+      await signOut(auth);
+      setUser(null);
+    } else {
+      setUser(nextUser);
+    }
+    setLoading(false);
+  }), []);
 
   const value = useMemo<AuthContextValue>(() => ({
     user,
@@ -98,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signIn: async () => {
       const provider = new OAuthProvider('microsoft.com');
       provider.setCustomParameters({
-        prompt: 'login',
+        prompt: 'select_account',
         ...(import.meta.env.VITE_MICROSOFT_TENANT_ID
           ? { tenant: import.meta.env.VITE_MICROSOFT_TENANT_ID }
           : {}),
