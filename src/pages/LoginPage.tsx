@@ -42,7 +42,7 @@ export default function LoginPage() {
         <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">Regent RV</p>
         <h1 className="text-3xl font-bold tracking-tight text-slate-950">Sign in to Workspace</h1>
         <p className="mt-3 text-sm leading-6 text-slate-600">
-          Use your company Microsoft account to securely access the planning workspace.
+          Use your company Microsoft account once. This browser will remember you and securely verify your session on future visits.
         </p>
 
         <Button
@@ -57,7 +57,7 @@ export default function LoginPage() {
         {error && <p role="alert" className="mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
 
         <div className="mt-8 border-t border-slate-200 pt-6 text-center text-xs leading-5 text-slate-500">
-          Access is restricted to <strong className="font-semibold text-slate-700">@{ALLOWED_DOMAIN}</strong> accounts.
+          Access is restricted to verified Microsoft <strong className="font-semibold text-slate-700">@{ALLOWED_DOMAIN}</strong> accounts.
         </div>
       </section>
     </main>

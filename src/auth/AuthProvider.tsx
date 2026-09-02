@@ -1,9 +1,11 @@
 import { auth } from '@/lib/firebase';
 import {
+  browserLocalPersistence,
   OAuthProvider,
   User,
   getIdTokenResult,
-  onAuthStateChanged,
+  onIdTokenChanged,
+  setPersistence,
   signInWithPopup,
   signOut,
 } from 'firebase/auth';
@@ -11,7 +13,6 @@ import { FirebaseError } from 'firebase/app';
 import { ReactNode, createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 const ALLOWED_DOMAIN = 'regentrv.com.au';
-const REAUTHENTICATION_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
 type AuthContextValue = {
   user: User | null;
@@ -22,8 +23,11 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-function hasAllowedDomain(user: User) {
-  return user.email?.toLowerCase().endsWith(`@${ALLOWED_DOMAIN}`) ?? false;
+function isAllowedMicrosoftUser(user: User) {
+  const hasAllowedDomain = user.email?.toLowerCase().endsWith(`@${ALLOWED_DOMAIN}`) ?? false;
+  const signedInWithMicrosoft = user.providerData.some(({ providerId }) => providerId === 'microsoft.com');
+
+  return hasAllowedDomain && signedInWithMicrosoft;
 }
 
 function getSignInError(error: unknown) {
@@ -51,43 +55,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let expirationTimer: number | undefined;
+    let unsubscribe = () => undefined;
+    let cancelled = false;
 
-    const unsubscribe = onAuthStateChanged(auth, async (nextUser) => {
-      window.clearTimeout(expirationTimer);
+    const restoreSession = async () => {
+      await setPersistence(auth, browserLocalPersistence);
 
-      if (!nextUser) {
-        setUser(null);
-        setLoading(false);
-        return;
-      }
+      if (cancelled) return;
 
-      try {
-        const { authTime } = await getIdTokenResult(nextUser);
-        const authenticatedAt = Date.parse(authTime);
-        const remainingSessionTime = authenticatedAt + REAUTHENTICATION_INTERVAL_MS - Date.now();
-
-        if (!hasAllowedDomain(nextUser) || !Number.isFinite(authenticatedAt) || remainingSessionTime <= 0) {
-          await signOut(auth);
+      unsubscribe = onIdTokenChanged(auth, async (nextUser) => {
+        if (!nextUser) {
           setUser(null);
+          setLoading(false);
           return;
         }
 
-        setUser(nextUser);
-        expirationTimer = window.setTimeout(() => {
-          void signOut(auth);
-        }, remainingSessionTime);
-      } catch {
-        // Fail closed when the signed authentication time cannot be verified.
-        await signOut(auth);
+        try {
+          const token = await getIdTokenResult(nextUser);
+          const signedInWithMicrosoft = token.signInProvider === 'microsoft.com';
+
+          if (!isAllowedMicrosoftUser(nextUser) || !signedInWithMicrosoft) {
+            await signOut(auth);
+            setUser(null);
+            return;
+          }
+
+          setUser(nextUser);
+        } catch {
+          // Fail closed when Firebase cannot refresh and verify the persisted session.
+          await signOut(auth);
+          setUser(null);
+        } finally {
+          setLoading(false);
+        }
+      });
+    };
+
+    void restoreSession().catch(() => {
+      if (!cancelled) {
         setUser(null);
-      } finally {
         setLoading(false);
       }
     });
 
     return () => {
-      window.clearTimeout(expirationTimer);
+      cancelled = true;
       unsubscribe();
     };
   }, []);
@@ -106,7 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       try {
         const result = await signInWithPopup(auth, provider);
-        if (!hasAllowedDomain(result.user)) {
+        if (!isAllowedMicrosoftUser(result.user)) {
           await signOut(auth);
           throw new Error(`Please sign in with your @${ALLOWED_DOMAIN} Microsoft account.`);
         }
