@@ -41,10 +41,25 @@ All shadcn/ui components have been downloaded under `@/components/ui`.
 The application uses Firebase Authentication's Microsoft provider and only
 accepts accounts whose email address ends in `@regentrv.com.au`.
 
+It also supports administrator-created Firebase email/password accounts for the
+same domain. Passwords are stored and hashed by Firebase Authentication; they
+are never written as readable values to Realtime Database. Only the Microsoft
+identity `yan@regentrv.com.au` can see the Settings link, enter the route, or
+call the account-management backend. The backend repeats this authorization
+check, so hiding the browser UI is not the security boundary.
+
+To enable account sign-in and management:
+
+1. Enable **Email/Password** in Firebase Authentication → Sign-in method.
+2. Install function dependencies with `cd functions && npm install`.
+3. Deploy the privileged backend with `firebase deploy --only functions`.
+4. Keep `yan@regentrv.com.au` as a Microsoft-provider account. Password-provider
+   accounts using that address are deliberately not granted administrator access.
+
 The Firebase session uses browser-local persistence, so returning users do not
 need to open the Microsoft login flow on every visit. On startup and whenever
-Firebase refreshes the ID token, the app verifies that the session was created
-with the Microsoft provider and that the account still uses the allowed
+Firebase refreshes the ID token, the app verifies that the session uses either
+the Microsoft or password provider and that the account still uses the allowed
 `@regentrv.com.au` domain. If token refresh or either check fails, the app signs
 the user out. The interactive Microsoft OAuth request still uses
 `prompt=select_account` when a new sign-in is required.
