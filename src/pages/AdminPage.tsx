@@ -20,6 +20,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { WorkspaceIcon } from '@/components/WorkspaceIcon';
+import { AccountManagement } from '@/components/AccountManagement';
 
 const modernIconOptions = [
   { id: 'globe', icon: <Globe className="w-5 h-5" />, name: 'Globe' },
@@ -354,6 +355,7 @@ export default function AdminPage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <AccountManagement />
         
         {/* Card Configuration Section */}
         <Card className="mb-6">

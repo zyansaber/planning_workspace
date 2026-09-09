@@ -6,6 +6,7 @@ import {
   getIdTokenResult,
   onIdTokenChanged,
   setPersistence,
+  signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
 } from 'firebase/auth';
@@ -18,6 +19,7 @@ type AuthContextValue = {
   user: User | null;
   loading: boolean;
   signIn: () => Promise<void>;
+  signInWithPassword: (email: string, password: string) => Promise<void>;
   logOut: () => Promise<void>;
 };
 
@@ -47,7 +49,7 @@ function getSignInError(error: unknown) {
     'auth/cancelled-popup-request': 'Another sign-in window is already open. Complete it or try again.',
   };
 
-  return new Error(messages[error.code] ?? 'Microsoft sign-in failed. Please try again or contact your administrator.');
+  return new Error(messages[error.code] ?? 'Sign-in failed. Check your account details or contact your administrator.');
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -72,9 +74,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         try {
           const token = await getIdTokenResult(nextUser);
-          const signedInWithMicrosoft = token.signInProvider === 'microsoft.com';
+          const supportedProvider = token.signInProvider === 'microsoft.com' || token.signInProvider === 'password';
+          const hasAllowedDomain = nextUser.email?.toLowerCase().endsWith(`@${ALLOWED_DOMAIN}`) ?? false;
 
-          if (!isAllowedMicrosoftUser(nextUser) || !signedInWithMicrosoft) {
+          if (!hasAllowedDomain || !supportedProvider) {
             await signOut(auth);
             setUser(null);
             return;
@@ -121,6 +124,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!isAllowedMicrosoftUser(result.user)) {
           await signOut(auth);
           throw new Error(`Please sign in with your @${ALLOWED_DOMAIN} Microsoft account.`);
+        }
+      } catch (error) {
+        throw getSignInError(error);
+      }
+    },
+    signInWithPassword: async (email, password) => {
+      try {
+        const result = await signInWithEmailAndPassword(auth, email.trim().toLowerCase(), password);
+        const hasAllowedDomain = result.user.email?.toLowerCase().endsWith(`@${ALLOWED_DOMAIN}`) ?? false;
+        if (!hasAllowedDomain) {
+          await signOut(auth);
+          throw new Error(`Please sign in with your @${ALLOWED_DOMAIN} account.`);
         }
       } catch (error) {
         throw getSignInError(error);
