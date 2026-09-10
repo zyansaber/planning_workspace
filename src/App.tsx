@@ -9,7 +9,7 @@ import NestedPage from './pages/NestedPage';
 import NotFound from './pages/NotFound';
 import LoginPage from './pages/LoginPage';
 import { AuthProvider } from './auth/AuthProvider';
-import { ProtectedRoute, SettingsRoute } from './components/ProtectedRoute';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 const queryClient = new QueryClient();
 
@@ -23,9 +23,7 @@ const App = () => (
             <Route path="/login" element={<LoginPage />} />
             <Route element={<ProtectedRoute />}>
               <Route path="/" element={<Index />} />
-              <Route element={<SettingsRoute />}>
-                <Route path="/admin" element={<AdminPage />} />
-              </Route>
+              <Route path="/admin" element={<AdminPage />} />
               <Route path="/embed/:id" element={<EmbedPage />} />
               <Route path="/nested/:id" element={<NestedPage />} />
               <Route path="*" element={<NotFound />} />

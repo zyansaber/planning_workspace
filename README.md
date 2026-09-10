@@ -41,36 +41,12 @@ All shadcn/ui components have been downloaded under `@/components/ui`.
 The application uses Firebase Authentication's Microsoft provider and only
 accepts accounts whose email address ends in `@regentrv.com.au`.
 
-It also supports Firebase email/password accounts registered in the same
-Firebase Authentication project. These accounts are not restricted to the
-Microsoft company domain. Passwords are stored and hashed by Firebase; they
-are never written as readable values to Realtime Database. Only the authenticated
-identity `yan@regentrv.com.au` can see the Settings link, enter the route, or
-call the account-management backend. The backend repeats this authorization
-check, so hiding the browser UI is not the security boundary.
-
-To enable account sign-in and management:
-
-1. In **Firebase Console → Authentication → Sign-in method**, enable
-   **Email/Password** (not Email link/passwordless).
-2. In **Authentication → Users**, add the initial administrator account with the
-   exact email `yan@regentrv.com.au` and a password of at least six characters.
-3. Install function dependencies with `cd functions && npm install`.
-4. Deploy the privileged backend with `firebase deploy --only functions`.
-5. Sign in as `yan@regentrv.com.au` with the password created in step 2. The
-   Settings page can then create and manage all subsequent accounts.
-
-If password sign-in reports `auth/operation-not-allowed`, the Email/Password
-provider is still disabled. If sign-in succeeds but account management reports
-that the function is unavailable, deploy the function from step 4 and confirm
-the Firebase CLI is targeting the `planningworkspace` project.
-
 The Firebase session uses browser-local persistence, so returning users do not
 need to open the Microsoft login flow on every visit. On startup and whenever
-Firebase refreshes the ID token, the app accepts registered password-provider
-users directly. Microsoft-provider users must still use the allowed
-`@regentrv.com.au` domain. If token refresh or the applicable provider check
-fails, the app signs the user out. The interactive Microsoft OAuth request uses
+Firebase refreshes the ID token, the app verifies that the session was created
+with the Microsoft provider and that the account still uses the allowed
+`@regentrv.com.au` domain. If token refresh or either check fails, the app signs
+the user out. The interactive Microsoft OAuth request still uses
 `prompt=select_account` when a new sign-in is required.
 
 1. In **Microsoft Entra admin center → App registrations**, create an app for
