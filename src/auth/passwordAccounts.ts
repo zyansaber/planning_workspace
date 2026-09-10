@@ -1,5 +1,5 @@
 import { database } from '@/lib/firebase';
-import { get, ref, remove, set, update } from 'firebase/database';
+import { get, ref, remove, serverTimestamp, set, update } from 'firebase/database';
 
 export type PasswordAccount = {
   email: string;
@@ -7,6 +7,7 @@ export type PasswordAccount = {
   passwordHash: string;
   disabled: boolean;
   createdAt: string;
+  lastLoginAt?: number;
 };
 
 const iterations = 210_000;
@@ -37,6 +38,10 @@ export async function verifyPasswordAccount(email: string, password: string) {
   const account = snapshot.val() as PasswordAccount;
   if (account.disabled || account.email !== normalizedEmail) return false;
   return (await hashPassword(password, base64ToBytes(account.salt))) === account.passwordHash;
+}
+
+export async function recordPasswordAccountLogin(email: string) {
+  await set(ref(database, `passwordUsers/${accountKey(email)}/lastLoginAt`), serverTimestamp());
 }
 
 export async function savePasswordAccount(email: string, password: string, existingEmail?: string, disabled = false) {
