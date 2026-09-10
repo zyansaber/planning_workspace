@@ -14,9 +14,11 @@ function MicrosoftMark() {
 }
 
 export default function LoginPage() {
-  const { user, loading, signIn } = useAuth();
+  const { user, loading, signIn, signInWithPassword } = useAuth();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   if (!loading && user) return <Navigate to="/" replace />;
 
@@ -25,6 +27,19 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       await signIn();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Unable to sign in. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handlePasswordSignIn = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setError('');
+    setSubmitting(true);
+    try {
+      await signInWithPassword(email, password);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Unable to sign in. Please try again.');
     } finally {
@@ -42,7 +57,7 @@ export default function LoginPage() {
         <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">Regent RV</p>
         <h1 className="text-3xl font-bold tracking-tight text-slate-950">Sign in to Workspace</h1>
         <p className="mt-3 text-sm leading-6 text-slate-600">
-          Use your company Microsoft account once. This browser will remember you and securely verify your session on future visits.
+          Sign in with your approved company account. This browser will remember you and securely verify your session on future visits.
         </p>
 
         <Button
@@ -54,10 +69,26 @@ export default function LoginPage() {
           Continue with Microsoft
         </Button>
 
+        <div className="my-6 flex items-center gap-3 text-xs uppercase tracking-wider text-slate-400">
+          <span className="h-px flex-1 bg-slate-200" />or<span className="h-px flex-1 bg-slate-200" />
+        </div>
+
+        <form className="space-y-4" onSubmit={handlePasswordSignIn}>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700" htmlFor="email">Account email</label>
+            <input id="email" type="email" autoComplete="username" required value={email} onChange={(event) => setEmail(event.target.value)} className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" placeholder="Account registered in Firebase" />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700" htmlFor="password">Password</label>
+            <input id="password" type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} className="h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
+          </div>
+          <Button type="submit" variant="outline" className="h-11 w-full" disabled={submitting || loading}>Sign in with account</Button>
+        </form>
+
         {error && <p role="alert" className="mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
 
         <div className="mt-8 border-t border-slate-200 pt-6 text-center text-xs leading-5 text-slate-500">
-          Access is restricted to verified Microsoft <strong className="font-semibold text-slate-700">@{ALLOWED_DOMAIN}</strong> accounts.
+          Microsoft sign-in requires an <strong className="font-semibold text-slate-700">@{ALLOWED_DOMAIN}</strong> account. Account/password sign-in accepts registered Firebase Authentication users.
         </div>
       </section>
     </main>
