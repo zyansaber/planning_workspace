@@ -8,6 +8,7 @@ import EmbedPage from './pages/EmbedPage';
 import NestedPage from './pages/NestedPage';
 import NotFound from './pages/NotFound';
 import LoginPage from './pages/LoginPage';
+import TestPage from './pages/TestPage';
 import { AuthProvider } from './auth/AuthProvider';
 import { ProtectedRoute, SettingsRoute } from './components/ProtectedRoute';
 
@@ -21,6 +22,7 @@ const App = () => (
         <HashRouter>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/test" element={<TestPage />} />
             <Route element={<ProtectedRoute />}>
               <Route path="/" element={<Index />} />
               <Route element={<SettingsRoute />}>
