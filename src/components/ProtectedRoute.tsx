@@ -18,10 +18,3 @@ export function ProtectedRoute() {
   if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
   return <Outlet />;
 }
-
-export function SettingsRoute() {
-  const { loading, isSettingsAdmin } = useAuth();
-  if (loading) return <div className="flex min-h-screen items-center justify-center">Checking your account…</div>;
-  if (!isSettingsAdmin) return <Navigate to="/" replace />;
-  return <Outlet />;
-}
