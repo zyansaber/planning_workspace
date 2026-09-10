@@ -18,10 +18,3 @@ export function ProtectedRoute() {
   if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
   return <Outlet />;
 }
-
-export function SettingsRoute() {
-  const { user, loading } = useAuth();
-  if (loading) return <div className="flex min-h-screen items-center justify-center">Checking your account…</div>;
-  if (user?.email?.toLowerCase() !== 'yan@regentrv.com.au') return <Navigate to="/" replace />;
-  return <Outlet />;
-}
