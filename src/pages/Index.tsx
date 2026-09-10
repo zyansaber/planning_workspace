@@ -9,7 +9,7 @@ import { LogOut } from 'lucide-react';
 export default function Index() {
   const { items, loading } = useWorkspaceStore();
   const navigate = useNavigate();
-  const { user, logOut } = useAuth();
+  const { user, logOut, isSettingsAdmin } = useAuth();
   
   // Filter to show only top-level items (not nested children)
   const topLevelItems = items.filter(item => !item.parentId || item.parentId === '' || item.parentId === 'none');
@@ -36,7 +36,7 @@ export default function Index() {
             </div>
             <div className="flex items-center gap-2">
               <span className="hidden text-sm text-gray-600 md:inline">{user?.email}</span>
-              <Button
+              {isSettingsAdmin && <Button
                 onClick={() => navigate('/admin')}
                 variant="outline"
                 size="sm"
@@ -44,7 +44,7 @@ export default function Index() {
               >
                 <Settings className="w-4 h-4" />
                 Settings
-              </Button>
+              </Button>}
               <Button onClick={logOut} variant="ghost" size="sm" className="flex items-center gap-2">
                 <LogOut className="w-4 h-4" />
                 Sign out
@@ -74,12 +74,12 @@ export default function Index() {
             </div>
             <h3 className="text-2xl font-bold text-gray-900 mb-3 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text">No Work Areas</h3>
             <p className="text-gray-600 mb-8 text-lg">Create your first workspace to begin your productive journey</p>
-            <Button 
+            {isSettingsAdmin && <Button
               onClick={() => navigate('/admin')} 
               className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-8 py-3 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
             >
               Get Started
-            </Button>
+            </Button>}
           </div>
         ) : (
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
