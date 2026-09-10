@@ -1,0 +1,18 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "workspaces": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email === 'yan@regentrv.com.au'"
+    },
+    "passwordUsers": {
+      ".read": "auth != null && auth.token.email === 'yan@regentrv.com.au'",
+      "$accountId": {
+        ".read": true,
+        ".write": "auth != null && auth.token.email === 'yan@regentrv.com.au'",
+        ".validate": "!newData.exists() || (newData.hasChildren(['email', 'salt', 'passwordHash', 'disabled', 'createdAt']) && newData.child('email').isString() && newData.child('salt').isString() && newData.child('passwordHash').isString() && newData.child('disabled').isBoolean() && newData.child('createdAt').isString())"
+      }
+    }
+  }
+}
