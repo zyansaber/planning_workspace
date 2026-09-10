@@ -11,7 +11,10 @@
       "$accountId": {
         ".read": true,
         ".write": "auth != null && auth.token.email === 'yan@regentrv.com.au'",
-        ".validate": "!newData.exists() || (newData.hasChildren(['email', 'salt', 'passwordHash', 'disabled', 'createdAt']) && newData.child('email').isString() && newData.child('salt').isString() && newData.child('passwordHash').isString() && newData.child('disabled').isBoolean() && newData.child('createdAt').isString())"
+        ".validate": "!newData.exists() || (newData.hasChildren(['email', 'salt', 'passwordHash', 'disabled', 'createdAt']) && newData.child('email').isString() && newData.child('salt').isString() && newData.child('passwordHash').isString() && newData.child('disabled').isBoolean() && newData.child('createdAt').isString() && (!newData.child('lastLoginAt').exists() || newData.child('lastLoginAt').isNumber()))",
+        "lastLoginAt": {
+          ".write": "data.parent().exists() && newData.isNumber() && newData.val() <= now && newData.val() >= now - 60000"
+        }
       }
     }
   }

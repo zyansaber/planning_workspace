@@ -10,7 +10,7 @@ import {
   signOut,
 } from 'firebase/auth';
 import { ReactNode, createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { verifyPasswordAccount } from './passwordAccounts';
+import { recordPasswordAccountLogin, verifyPasswordAccount } from './passwordAccounts';
 
 const ALLOWED_DOMAIN = 'regentrv.com.au';
 
@@ -157,6 +157,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!await verifyPasswordAccount(normalizedEmail, password)) throw new Error('The account or password is incorrect.');
         localStorage.setItem('passwordAccountEmail', normalizedEmail);
         setPasswordUser({ email: normalizedEmail, passwordAccount: true });
+        // Login telemetry must not delay or interrupt a successful sign-in.
+        void recordPasswordAccountLogin(normalizedEmail).catch(() => undefined);
       } catch (error) {
         throw error instanceof Error ? error : new Error('Account sign-in failed. Please try again.');
       }
