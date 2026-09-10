@@ -41,30 +41,12 @@ All shadcn/ui components have been downloaded under `@/components/ui`.
 The application uses Firebase Authentication's Microsoft provider and only
 accepts accounts whose email address ends in `@regentrv.com.au`.
 
-It also supports locally managed password accounts stored under
-`passwordUsers` in Firebase Realtime Database. These accounts do not use
-Firebase Authentication and are not restricted to the Microsoft company
-domain. Passwords are never stored directly: the browser derives a salted
-PBKDF2-SHA-256 hash before writing the account record.
-
-Sign in as the Microsoft administrator `yan@regentrv.com.au`, open Settings,
-and create the additional user's email and password in **Password accounts**.
-No Email/Password or Anonymous provider needs to be enabled in Firebase Auth.
-Only the real Microsoft Firebase session can open Settings; a local password
-account using the administrator email does not receive administrator access.
-
-Because password verification happens in the browser, Realtime Database must
-permit unauthenticated reads of individual `passwordUsers` records. The hashes
-are deliberately slow and salted, but client-side verification is less secure
-than Firebase Authentication or a dedicated server and does not create a
-Firebase `auth` identity. Use this compatibility mode only when Firebase Auth
-is unavailable to the target user, and do not reuse passwords from other sites.
-
 The Firebase session uses browser-local persistence, so returning users do not
 need to open the Microsoft login flow on every visit. On startup and whenever
-Firebase refreshes the ID token for Microsoft users, who must still use the
-allowed `@regentrv.com.au` domain. Local password-account sessions are persisted
-separately in the browser. The interactive Microsoft OAuth request uses
+Firebase refreshes the ID token, the app verifies that the session was created
+with the Microsoft provider and that the account still uses the allowed
+`@regentrv.com.au` domain. If token refresh or either check fails, the app signs
+the user out. The interactive Microsoft OAuth request still uses
 `prompt=select_account` when a new sign-in is required.
 
 1. In **Microsoft Entra admin center → App registrations**, create an app for
