@@ -31,8 +31,12 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 
-import HERO_IMAGE from './regent-executive-hero.png';
-import WEEKLY_REPORT_IMAGE from './regent-weekly-report.png';
+// Use remote placeholders until branded assets are committed. The previous
+// local imports referenced missing files and prevented Vite from compiling.
+const HERO_IMAGE =
+  'https://images.unsplash.com/photo-1596470689657-bcfc0e24f4e0?fm=jpg&q=75&w=2400&auto=format&fit=crop';
+const WEEKLY_REPORT_IMAGE =
+  'https://images.unsplash.com/photo-1571528122012-eff3e9a3f49b?fm=jpg&q=75&w=1200&auto=format&fit=crop';
 
 type SectionId = 'production' | 'sales' | 'warranty' | 'finance';
 type Status = 'on-track' | 'watch' | 'action';
