@@ -4,7 +4,7 @@ import { useWorkspaceStore } from '@/hooks/useWorkspaceStore';
 import { WorkspaceCard } from '@/components/WorkspaceCard';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Settings, Plus, Loader2, LogOut, ArrowRight, CalendarDays } from 'lucide-react';
+import { Settings, Plus, Loader2, LogOut, ArrowRight, CalendarDays, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/auth/AuthProvider';
 import { database } from '@/lib/firebase';
@@ -20,7 +20,7 @@ type NewsItem = {
   summary?: string;
   what_happened?: string;
   why_it_matters?: string;
-  sources?: Array<string | { title?: string; url?: string }>;
+  sources?: Array<string | { name?: string; title?: string; url?: string }>;
 };
 
 const levelColour: Record<string, string> = {
@@ -42,6 +42,7 @@ export default function Index() {
   const { user, logOut, isSettingsAdmin } = useAuth();
   const [news, setNews] = useState<NewsItem[]>([]);
   const [newsLoading, setNewsLoading] = useState(true);
+  const [isNewsVisible, setIsNewsVisible] = useState(false);
   const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
 
   useEffect(() => onValue(ref(database, 'rv_intelligence/latest/payload/items'), (snapshot) => {
@@ -105,20 +106,35 @@ export default function Index() {
           <section className="mb-8 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
             <div className="flex items-center justify-between border-b border-gray-100 px-5 py-3.5">
               <div>
-                <h2 className="text-sm font-semibold text-gray-900">RV Industry Intelligence</h2>
+                <h2 className="text-sm font-semibold text-gray-900">RV Industry News</h2>
                 <p className="mt-0.5 text-xs text-gray-500">Latest Australian market updates</p>
               </div>
-              {sortedNews.some((item) => item.status === 'new') && (
-                <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">New updates</span>
-              )}
+              <div className="flex items-center gap-2">
+                {sortedNews.some((item) => item.status === 'new') && (
+                  <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">New updates</span>
+                )}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  aria-expanded={isNewsVisible}
+                  aria-controls="rv-industry-news-list"
+                  onClick={() => setIsNewsVisible((visible) => !visible)}
+                  className="h-8 gap-1.5 px-2 text-xs text-gray-600"
+                >
+                  {isNewsVisible ? 'Hide' : 'Show'}
+                  <ChevronDown className={`h-4 w-4 transition-transform ${isNewsVisible ? 'rotate-180' : ''}`} />
+                </Button>
+              </div>
             </div>
 
-            {newsLoading ? (
-              <div className="flex items-center gap-2 px-5 py-5 text-sm text-gray-500"><Loader2 className="h-4 w-4 animate-spin" />Loading market updates...</div>
-            ) : sortedNews.length === 0 ? (
-              <div className="px-5 py-5 text-sm text-gray-500">No market updates are available today.</div>
-            ) : (
-              <div className="divide-y divide-gray-100">
+            {isNewsVisible && <div id="rv-industry-news-list">
+              {newsLoading ? (
+                <div className="flex items-center gap-2 px-5 py-5 text-sm text-gray-500"><Loader2 className="h-4 w-4 animate-spin" />Loading market updates...</div>
+              ) : sortedNews.length === 0 ? (
+                <div className="px-5 py-5 text-sm text-gray-500">No market updates are available today.</div>
+              ) : (
+                <div className="divide-y divide-gray-100">
                 {sortedNews.map((item) => {
                   const level = item.importance?.level?.toLowerCase() ?? 'important';
                   return (
@@ -136,8 +152,9 @@ export default function Index() {
                     </button>
                   );
                 })}
-              </div>
-            )}
+                </div>
+              )}
+            </div>}
           </section>
 
           <div className="mb-8">
@@ -190,7 +207,7 @@ export default function Index() {
               {selectedNews.summary && <p className="font-medium text-gray-700">{selectedNews.summary}</p>}
               {selectedNews.what_happened && <div><h3 className="mb-1 font-semibold text-gray-900">What happened</h3><p>{selectedNews.what_happened}</p></div>}
               {selectedNews.why_it_matters && <div className="rounded-lg bg-gray-50 p-4"><h3 className="mb-1 font-semibold text-gray-900">Why it matters</h3><p>{selectedNews.why_it_matters}</p></div>}
-              {!!selectedNews.sources?.length && <div><h3 className="mb-2 font-semibold text-gray-900">Sources</h3><div className="space-y-2">{selectedNews.sources.map((source, index) => { const url = typeof source === 'string' ? source : source.url; const title = typeof source === 'string' ? `Source ${index + 1}` : source.title ?? `Source ${index + 1}`; return url ? <a key={index} href={url} target="_blank" rel="noreferrer" className="block text-blue-600 hover:underline">{title}</a> : null; })}</div></div>}
+              {!!selectedNews.sources?.length && <div><h3 className="mb-2 font-semibold text-gray-900">Sources</h3><div className="space-y-2">{selectedNews.sources.map((source, index) => { const url = typeof source === 'string' ? source : source.url; const title = typeof source === 'string' ? `Source ${index + 1}` : source.name ?? source.title ?? `Source ${index + 1}`; return url ? <a key={index} href={url} target="_blank" rel="noreferrer" className="block text-blue-600 hover:underline">{title}</a> : null; })}</div></div>}
             </div>
           </>}
         </DialogContent>
