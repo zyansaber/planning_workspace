@@ -4,7 +4,7 @@ import { useWorkspaceStore } from '@/hooks/useWorkspaceStore';
 import { WorkspaceCard } from '@/components/WorkspaceCard';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Settings, Plus, Loader2, LogOut, ArrowRight, CalendarDays } from 'lucide-react';
+import { Settings, Plus, Loader2, LogOut, ArrowRight, CalendarDays, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/auth/AuthProvider';
 import { database } from '@/lib/firebase';
@@ -42,6 +42,7 @@ export default function Index() {
   const { user, logOut, isSettingsAdmin } = useAuth();
   const [news, setNews] = useState<NewsItem[]>([]);
   const [newsLoading, setNewsLoading] = useState(true);
+  const [isNewsVisible, setIsNewsVisible] = useState(false);
   const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
 
   useEffect(() => onValue(ref(database, 'rv_intelligence/latest/payload/items'), (snapshot) => {
@@ -50,9 +51,11 @@ export default function Index() {
     setNewsLoading(false);
   }, () => setNewsLoading(false)), []);
 
-  const latestNews = useMemo(() => [...news]
-    .sort((a, b) => (b.event_date ?? '').localeCompare(a.event_date ?? ''))
-    .slice(0, 10), [news]);
+  const sortedNews = useMemo(() => [...news].sort((a, b) => {
+    const importance = (b.importance?.score ?? 0) - (a.importance?.score ?? 0);
+    if (importance !== 0) return importance;
+    return (b.event_date ?? '').localeCompare(a.event_date ?? '');
+  }), [news]);
 
   // Filter to show only top-level items (not nested children)
   const topLevelItems = items.filter(item => !item.parentId || item.parentId === '' || item.parentId === 'none');
@@ -107,20 +110,32 @@ export default function Index() {
                 <p className="mt-0.5 text-xs text-gray-500">Latest Australian market updates</p>
               </div>
               <div className="flex items-center gap-2">
-                {latestNews.some((item) => item.status === 'new') && (
+                {sortedNews.some((item) => item.status === 'new') && (
                   <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">New updates</span>
                 )}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  aria-expanded={isNewsVisible}
+                  aria-controls="rv-industry-news-list"
+                  onClick={() => setIsNewsVisible((visible) => !visible)}
+                  className="h-8 gap-1.5 px-2 text-xs text-gray-600"
+                >
+                  {isNewsVisible ? 'Hide' : 'Show'}
+                  <ChevronDown className={`h-4 w-4 transition-transform ${isNewsVisible ? 'rotate-180' : ''}`} />
+                </Button>
               </div>
             </div>
 
-            <div id="rv-industry-news-list">
+            {isNewsVisible && <div id="rv-industry-news-list">
               {newsLoading ? (
                 <div className="flex items-center gap-2 px-5 py-5 text-sm text-gray-500"><Loader2 className="h-4 w-4 animate-spin" />Loading market updates...</div>
-              ) : latestNews.length === 0 ? (
-                <div className="px-5 py-5 text-sm text-gray-500">No market updates are available.</div>
+              ) : sortedNews.length === 0 ? (
+                <div className="px-5 py-5 text-sm text-gray-500">No market updates are available today.</div>
               ) : (
                 <div className="divide-y divide-gray-100">
-                {latestNews.map((item) => {
+                {sortedNews.map((item) => {
                   const level = item.importance?.level?.toLowerCase() ?? 'important';
                   return (
                     <button key={item.event_id} onClick={() => setSelectedNews(item)} className="group grid w-full grid-cols-[auto_1fr_auto] items-center gap-3 px-5 py-3 text-left transition-colors hover:bg-gray-50">
@@ -139,7 +154,7 @@ export default function Index() {
                 })}
                 </div>
               )}
-            </div>
+            </div>}
           </section>
 
           <div className="mb-8">
