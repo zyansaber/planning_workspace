@@ -6,10 +6,6 @@
       ".read": true,
       ".write": "auth != null && auth.token.email === 'yan@regentrv.com.au'"
     },
-    "rv_intelligence": {
-      ".read": true,
-      ".write": "auth != null && auth.token.email === 'yan@regentrv.com.au'"
-    },
     "passwordUsers": {
       ".read": "auth != null && auth.token.email === 'yan@regentrv.com.au'",
       "$accountId": {
