@@ -21,7 +21,14 @@ type NewsItem = {
   what_happened?: string;
   why_it_matters?: string;
   sources?: Array<string | { name?: string; title?: string; url?: string }>;
+  dailyDate?: string;
 };
+
+type DailyNews = Record<string, {
+  payload?: {
+    items?: NewsItem[] | Record<string, NewsItem>;
+  };
+}>;
 
 const levelColour: Record<string, string> = {
   critical: 'bg-red-500',
@@ -45,17 +52,20 @@ export default function Index() {
   const [isNewsVisible, setIsNewsVisible] = useState(false);
   const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
 
-  useEffect(() => onValue(ref(database, 'rv_intelligence/latest/payload/items'), (snapshot) => {
-    const value = snapshot.val() as NewsItem[] | Record<string, NewsItem> | null;
-    setNews(value ? (Array.isArray(value) ? value.filter(Boolean) : Object.values(value)) : []);
+  useEffect(() => onValue(ref(database, 'rv_intelligence/daily'), (snapshot) => {
+    const dailyNews = snapshot.val() as DailyNews | null;
+    const allNews = Object.entries(dailyNews ?? {}).flatMap(([dailyDate, dailyEntry]) => {
+      const items = dailyEntry.payload?.items;
+      const newsItems = items ? (Array.isArray(items) ? items.filter(Boolean) : Object.values(items)) : [];
+      return newsItems.map((item) => ({ ...item, dailyDate }));
+    });
+    setNews(allNews);
     setNewsLoading(false);
   }, () => setNewsLoading(false)), []);
 
-  const sortedNews = useMemo(() => [...news].sort((a, b) => {
-    const importance = (b.importance?.score ?? 0) - (a.importance?.score ?? 0);
-    if (importance !== 0) return importance;
-    return (b.event_date ?? '').localeCompare(a.event_date ?? '');
-  }), [news]);
+  const latestNews = useMemo(() => [...news]
+    .sort((a, b) => (b.event_date ?? b.dailyDate ?? '').localeCompare(a.event_date ?? a.dailyDate ?? ''))
+    .slice(0, 10), [news]);
 
   // Filter to show only top-level items (not nested children)
   const topLevelItems = items.filter(item => !item.parentId || item.parentId === '' || item.parentId === 'none');
@@ -110,7 +120,7 @@ export default function Index() {
                 <p className="mt-0.5 text-xs text-gray-500">Latest Australian market updates</p>
               </div>
               <div className="flex items-center gap-2">
-                {sortedNews.some((item) => item.status === 'new') && (
+                {latestNews.some((item) => item.status === 'new') && (
                   <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">New updates</span>
                 )}
                 <Button
@@ -131,19 +141,19 @@ export default function Index() {
             {isNewsVisible && <div id="rv-industry-news-list">
               {newsLoading ? (
                 <div className="flex items-center gap-2 px-5 py-5 text-sm text-gray-500"><Loader2 className="h-4 w-4 animate-spin" />Loading market updates...</div>
-              ) : sortedNews.length === 0 ? (
-                <div className="px-5 py-5 text-sm text-gray-500">No market updates are available today.</div>
+              ) : latestNews.length === 0 ? (
+                <div className="px-5 py-5 text-sm text-gray-500">No market updates are available.</div>
               ) : (
                 <div className="divide-y divide-gray-100">
-                {sortedNews.map((item) => {
+                {latestNews.map((item) => {
                   const level = item.importance?.level?.toLowerCase() ?? 'important';
                   return (
-                    <button key={item.event_id} onClick={() => setSelectedNews(item)} className="group grid w-full grid-cols-[auto_1fr_auto] items-center gap-3 px-5 py-3 text-left transition-colors hover:bg-gray-50">
+                    <button key={`${item.dailyDate}-${item.event_id}`} onClick={() => setSelectedNews(item)} className="group grid w-full grid-cols-[auto_1fr_auto] items-center gap-3 px-5 py-3 text-left transition-colors hover:bg-gray-50">
                       <span className={`h-2 w-2 rounded-full ${levelColour[level] ?? levelColour.important}`} aria-label={level} />
                       <span className="min-w-0">
                         <span className="flex items-center gap-2 text-[11px] text-gray-500">
                           <span className="truncate font-medium text-gray-600">{item.brand}</span>
-                          {item.event_date && <><span>·</span><span className="shrink-0">{formatDate(item.event_date)}</span></>}
+                          {(item.event_date ?? item.dailyDate) && <><span>·</span><span className="shrink-0">{formatDate(item.event_date ?? item.dailyDate)}</span></>}
                           {item.status === 'new' && <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-emerald-700">New</span>}
                         </span>
                         <span className="mt-0.5 block truncate text-sm font-medium text-gray-900 group-hover:text-blue-700">{item.headline}</span>
@@ -199,7 +209,7 @@ export default function Index() {
                 <span className={`h-2 w-2 rounded-full ${levelColour[selectedNews.importance?.level?.toLowerCase() ?? 'important'] ?? levelColour.important}`} />
                 <span className="capitalize">{selectedNews.importance?.level ?? 'Important'}</span>
                 {selectedNews.brand && <><span>·</span><span>{selectedNews.brand}</span></>}
-                {selectedNews.event_date && <><span>·</span><span className="flex items-center gap-1"><CalendarDays className="h-3 w-3" />{formatDate(selectedNews.event_date)}</span></>}
+                {(selectedNews.event_date ?? selectedNews.dailyDate) && <><span>·</span><span className="flex items-center gap-1"><CalendarDays className="h-3 w-3" />{formatDate(selectedNews.event_date ?? selectedNews.dailyDate)}</span></>}
               </div>
               <DialogTitle className="pr-6 text-left text-xl leading-snug">{selectedNews.headline}</DialogTitle>
             </DialogHeader>
