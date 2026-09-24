@@ -11,7 +11,6 @@ import { database } from '@/lib/firebase';
 
 type NewsItem = {
   event_id: string;
-  status?: string;
   importance?: { score?: number; level?: string };
   event_date?: string;
   category?: string;
@@ -120,9 +119,6 @@ export default function Index() {
                 <p className="mt-0.5 text-xs text-gray-500">Latest Australian market updates</p>
               </div>
               <div className="flex items-center gap-2">
-                {latestNews.some((item) => item.status === 'new') && (
-                  <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">New updates</span>
-                )}
                 <Button
                   type="button"
                   variant="ghost"
@@ -154,7 +150,6 @@ export default function Index() {
                         <span className="flex items-center gap-2 text-[11px] text-gray-500">
                           <span className="truncate font-medium text-gray-600">{item.brand}</span>
                           {(item.event_date ?? item.dailyDate) && <><span>·</span><span className="shrink-0">{formatDate(item.event_date ?? item.dailyDate)}</span></>}
-                          {item.status === 'new' && <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-emerald-700">New</span>}
                         </span>
                         <span className="mt-0.5 block truncate text-sm font-medium text-gray-900 group-hover:text-blue-700">{item.headline}</span>
                       </span>
